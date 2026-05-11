@@ -8,6 +8,27 @@ spring:
         locator:
           enabled: true
           lower-case-service-id: true
+      routes:
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/auth/**
+        - id: auth-service-jwks
+          uri: lb://auth-service
+          predicates:
+            - Path=/.well-known/**
+        - id: product-service
+          uri: lb://product-service
+          predicates:
+            - Path=/products/**
+        - id: order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/orders/**
+        - id: payment-service
+          uri: lb://payment-service
+          predicates:
+            - Path=/payments/**
   security:
     oauth2:
       resourceserver:

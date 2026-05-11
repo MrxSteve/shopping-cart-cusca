@@ -1,0 +1,55 @@
+server:
+  port: 8083
+
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5432/cusca_main?currentSchema=orders
+    username: cusca
+    password: cusca123
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: orders
+  flyway:
+    enabled: true
+    schemas: orders
+    default-schema: orders
+    baseline-on-migrate: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://auth-service:8081/.well-known/jwks.json
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-server:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+
+feign:
+  client:
+    config:
+      product-service:
+        connect-timeout: 3000
+        read-timeout: 5000
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      product-service:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  health:
+    circuitbreakers:
+      enabled: true

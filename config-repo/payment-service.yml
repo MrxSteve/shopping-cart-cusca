@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5432/cusca_main?currentSchema=payments
+    username: cusca
+    password: cusca123
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-server:8761/eureka/
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      order-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+  retry:
+    instances:
+      order-service:
+        maxAttempts: 3
+        waitDuration: 1s
+        ignoreExceptions:
+          - feign.FeignException.BadRequest
