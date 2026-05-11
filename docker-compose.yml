@@ -137,6 +137,31 @@ services:
       discovery-server:
         condition: service_healthy
 
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    image: cusca-order-service:local
+    container_name: cusca-order-service
+    restart: on-failure
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/cusca_main?currentSchema=orders
+      - SPRING_DATASOURCE_USERNAME=cusca
+      - SPRING_DATASOURCE_PASSWORD=cusca123
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://auth-service:8081/.well-known/jwks.json
+    networks:
+      - cusca-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+
 volumes:
   postgres_data:
   auth-service-config:
