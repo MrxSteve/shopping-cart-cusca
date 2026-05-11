@@ -1,0 +1,15 @@
+server:
+  port: 8888
+
+spring:
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: file:./config-repo,classpath:/config-repo
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
