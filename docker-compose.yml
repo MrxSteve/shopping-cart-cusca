@@ -1,3 +1,5 @@
+version: '3.9'
+
 services:
   postgres:
     image: postgres:15-alpine
@@ -18,5 +20,59 @@ services:
       timeout: 5s
       retries: 5
 
+  config-server:
+    build:
+      context: ./config-server
+      dockerfile: Dockerfile
+    image: cusca-config-server:local
+    container_name: cusca-config-server
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./config-repo:/app/config-repo:ro
+    environment:
+      - SPRING_PROFILES_ACTIVE=native
+    networks:
+      - cusca-network
+    depends_on:
+      - postgres
+
+  discovery-server:
+    build:
+      context: ./discovery-server
+      dockerfile: Dockerfile
+    image: cusca-discovery-server:local
+    container_name: cusca-discovery-server
+    ports:
+      - "8761:8761"
+    environment:
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=false
+      - EUREKA_CLIENT_FETCH_REGISTRY=false
+    networks:
+      - cusca-network
+    depends_on:
+      - config-server
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    image: cusca-api-gateway:local
+    container_name: cusca-api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
+    networks:
+      - cusca-network
+    depends_on:
+      - discovery-server
+      - config-server
+
 volumes:
   postgres_data:
+
+networks:
+  cusca-network:
+    driver: bridge
