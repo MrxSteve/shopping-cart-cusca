@@ -1,0 +1,46 @@
+server:
+  port: 8082
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-server:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+
+fakestore:
+  base-url: https://fakestoreapi.com
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://auth-service:8081/.well-known/jwks.json
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      fakestore:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+        ignore-exceptions:
+          - com.prueba.product_service.exception.ProductNotFoundException
+  retry:
+    instances:
+      fakestore:
+        max-attempts: 3
+        wait-duration: 500ms
+        ignore-exceptions:
+          - com.prueba.product_service.exception.ProductNotFoundException
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  health:
+    circuitbreakers:
+      enabled: true
